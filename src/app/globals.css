@@ -1,0 +1,48 @@
+@import "tailwindcss";
+@theme inline { --color-background: #f6f3e9; --color-foreground: #203d32; --color-primary: #a83f23; --color-primary-foreground: #fffaf1; --font-sans: Arial, Helvetica, sans-serif; }
+:root { background: #f6f3e9; color: #203d32; font-family: Arial, Helvetica, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+a { text-underline-offset: 5px; }
+:focus-visible { outline: 3px solid #a83f23; outline-offset: 5px; }
+.site-header, main, footer { max-width: 1200px; margin-inline: auto; }
+.site-header { display: flex; justify-content: space-between; align-items: center; padding: 28px 40px; border-bottom: 1px solid #203d3233; }
+.brand { font: bold 25px Georgia, serif; text-decoration: none; }
+.brand span { display:block; font: 10px Arial, sans-serif; text-transform:uppercase; letter-spacing:.22em; margin-top:8px; }
+.stamp { border: 1px solid #53634b; border-radius: 3px 6px 2px 5px; padding: 9px 13px; font-size: 11px; text-transform:uppercase; letter-spacing:.12em; transform:rotate(-3deg); }
+.hero { padding: 82px 40px 70px; max-width: 930px; }
+.eyebrow { font-size: 11px; font-weight:700; text-transform:uppercase; letter-spacing: .16em; line-height: 1.8; }
+h1,h2,h3 { font-family: Georgia, 'Times New Roman', serif; font-weight:400; }
+h1 { font-size:clamp(44px,7vw,84px); line-height:1.07; letter-spacing:-.045em; margin:25px 0; }
+h1 em { color:#a83f23; }
+.intro { font-size:19px; line-height:1.7; max-width:610px; }
+.action { display:inline-flex; gap:40px; align-items:center; padding:17px 23px; margin-top:19px; background:#a83f23; color:#fffaf1; text-decoration:none; border-radius:3px; font-size:14px; }
+.small-note { font-size:12px; margin-top:16px; color:#546256; }
+.notes { border-top:1px solid #203d3233; padding:36px 40px 65px; }
+.section-heading { display:flex; justify-content:space-between; gap:30px; align-items:center; margin-bottom:26px; }
+h2 { font-size:32px; margin:8px 0 20px; letter-spacing:-.025em; }
+.section-heading p:last-child { font-size:13px; line-height:1.7; }
+.venue-card { border:1px solid #203d3233; display:grid; grid-template-columns: 30% 1fr; border-radius:4px; overflow:hidden; }
+.card-art { background:#dce2d3; padding:32px; display:flex; flex-direction:column; justify-content:space-between; min-height:260px; }
+.card-art > span:first-child { font:italic 44px Georgia,serif; line-height:1; opacity:.7; }
+.art-number { font:13px Georgia,serif; letter-spacing:.15em; }
+.card-copy { padding:30px 36px; }
+h3 { font-size:29px; margin:12px 0; }
+h3 a { text-decoration:none; }
+.card-copy > p:not(.eyebrow), .editor-note p { line-height:1.7; font-size:15px; max-width:620px; }
+.text-link { display:inline-block; padding-block:10px; font-size:14px; font-weight:600; }
+.editor-note { padding:32px 0 0; max-width:700px; }
+.editor-note h3 { font-size:25px; }
+footer { padding:25px 40px; border-top:1px solid #203d3233; font-size:12px; line-height:1.8; }
+footer span { display:block; color:#546256; }
+.profile { padding:45px 40px 80px; }
+.profile-label { margin-top:45px; }
+.notice { background:#ece7d8; border-left:3px solid #a83f23; padding:20px; margin:30px 0; line-height:1.7; }
+.facts-grid { display:grid; grid-template-columns:1fr 1fr; gap:50px; margin:40px 0; }
+dl > div { display:flex; justify-content:space-between; gap:15px; border-bottom:1px solid #203d3222; padding:14px 0; font-size:14px; }
+dt { text-transform:capitalize; } dd { margin:0; text-align:right; color:#546256; }
+details { border-block:1px solid #203d3233; padding:22px 0; max-width:750px; line-height:1.7; }
+summary { cursor:pointer; font-weight:600; }
+.skip-link { position:fixed; top:8px; left:8px; padding:12px; background:#203d32; color:white; transform:translateY(-180%); z-index:10; }
+.skip-link:focus { transform:translateY(0); }
+@media(max-width:640px) { .site-header { padding:22px; } .brand { font-size:22px; } .stamp { font-size:9px; padding:7px; } .hero { padding:55px 22px; } .intro { font-size:17px; } .notes,.profile { padding:30px 22px 50px; } .section-heading { display:block; } .venue-card { grid-template-columns:1fr; } .card-art { min-height:170px; padding:24px; } .card-art > span:first-child { font-size:35px; } .card-copy { padding:24px; } .facts-grid { grid-template-columns:1fr; gap:24px; } footer { padding:22px; } }

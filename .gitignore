@@ -1,0 +1,10 @@
+node_modules/
+.next/
+.open-next/
+.wrangler/
+.env*
+.dev.vars*
+!.env.example
+!.dev.vars.example
+*.tsbuildinfo
+.DS_Store
