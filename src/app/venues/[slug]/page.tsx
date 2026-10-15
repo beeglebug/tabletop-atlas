@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ExternalLinkIcon } from "@/components/ui/external-link-icon";
+import { SourceLinks } from "@/components/venues/source-links";
+import { FactDetails, factText } from "@/components/venues/fact-details";
+import type { Fact, Product, Service } from "@/content/types";
 import { getPublishedVenues, getVenueBySlug } from "@/lib/content";
-import type { Fact } from "@/content/types";
+import {
+  formatDate,
+  productLabels,
+  serviceLabels,
+  typeLabels,
+  venueTags,
+} from "@/lib/discovery";
 
 export const dynamicParams = false;
 
@@ -23,12 +33,28 @@ export async function generateMetadata({
   };
 }
 
-function factLabel(fact: Fact<boolean>) {
-  return fact.status === "unknown"
-    ? "Not checked"
-    : fact.value
-      ? "Available (demo)"
-      : "Unavailable (demo)";
+function PracticalFact({
+  title,
+  fact,
+  demo,
+}: {
+  title: string;
+  fact: Fact<string>;
+  demo: boolean;
+}) {
+  return (
+    <div>
+      <dt>{title}</dt>
+      <dd>
+        {fact.status === "known"
+          ? fact.value
+          : fact.reason === "conflicting-evidence"
+            ? "Published hours differ. Check directly with the venue before travelling."
+            : "Not checked — contact the venue before travelling."}
+        <FactDetails fact={fact} demo={demo} />
+      </dd>
+    </div>
+  );
 }
 
 export default async function VenuePage({
@@ -40,50 +66,220 @@ export default async function VenuePage({
 
   if (!venue) notFound();
 
+  const demo = venue.contentKind === "demo";
+  const publishedSources = venue.evidence.filter(
+    (source) => source.kind === "published",
+  );
+  const latestCheck = publishedSources
+    .map((source) => source.checkedOn)
+    .sort()
+    .at(-1);
+
   return (
     <article className="profile">
+      <SourceLinks />
       <Link className="text-link" href="/">
-        ← Back to the guide
+        ← Back to discovery
       </Link>
-      <p className="eyebrow profile-label">Fictional demo · Tabletop venue</p>
-      <h1>{venue.name}</h1>
-      <p className="intro">{venue.summary}</p>
-      <div className="notice">
-        Example content only. Coordinates and available offerings are
-        illustrative. No real venue information has been verified.
-      </div>
-      <div className="facts-grid">
-        <section>
-          <h2>Browse & buy</h2>
-          <dl>
-            {Object.entries(venue.products).map(([key, fact]) => (
-              <div key={key}>
-                <dt>{key.replaceAll("-", " ")}</dt>
-                <dd>{factLabel(fact)}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-        <section>
-          <h2>Stay & play</h2>
-          <dl>
-            {Object.entries(venue.services).map(([key, fact]) => (
-              <div key={key}>
-                <dt>{key.replaceAll("-", " ")}</dt>
-                <dd>{factLabel(fact)}</dd>
-              </div>
-            ))}
-          </dl>
-        </section>
-      </div>
-      <details>
-        <summary>Sources & updates</summary>
-        <p>
-          This fictional fixture has no source history or confirmation date.
-          Real profiles will link facts to published sources or dated first-hand
-          reports. A build date does not confirm venue information.
+      <header className="profile-header">
+        <p className="eyebrow">
+          {venue.town} / {typeLabels[venue.classification]}
+          {demo && " / Fictional demo"}
         </p>
+        <h1>{venue.name}</h1>
+        <p className="intro">{venue.summary}</p>
+        <ul className="tags" aria-label="Known offerings">
+          {venueTags(venue).map((tag) => (
+            <li key={tag}>{tag}</li>
+          ))}
+        </ul>
+      </header>
+      {demo ? (
+        <div className="notice">
+          Fictional demo. Offerings and map position are illustrative. This is
+          not a real destination.
+        </div>
+      ) : (
+        <div className="freshness-note">
+          <span className="mini-stamp">Published sources</span>
+          <p>
+            {latestCheck && (
+              <>
+                Published information last checked on{" "}
+                <time dateTime={latestCheck}>{formatDate(latestCheck)}</time>
+                .{" "}
+              </>
+            )}
+            Individual evidence dates vary. No first-hand visit is recorded.{" "}
+            <a href="#sources">Inspect sources & updates ↓</a>
+          </p>
+        </div>
+      )}
+      <div className="profile-grid">
+        <div>
+          <section className="field-note">
+            <p className="eyebrow">The field note</p>
+            <h2>A little local context</h2>
+            <p>{venue.editorialNote}</p>
+          </section>
+          <div className="facts-grid">
+            <section>
+              <h2>Browse & buy</h2>
+              <dl>
+                {Object.entries(venue.products).map(([key, fact]) => (
+                  <div key={key}>
+                    <dt>{productLabels[key as Product]}</dt>
+                    <dd>
+                      {factText(fact, demo)}
+                      <FactDetails fact={fact} demo={demo} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+            <section>
+              <h2>Stay & play</h2>
+              <dl>
+                {Object.entries(venue.services).map(([key, fact]) => (
+                  <div key={key}>
+                    <dt>{serviceLabels[key as Service]}</dt>
+                    <dd>
+                      {factText(fact, demo)}
+                      <FactDetails fact={fact} demo={demo} />
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+          </div>
+          <p className="unknown-note">
+            “Not checked” means we don’t yet know. It does not mean the venue
+            doesn’t offer it.
+          </p>
+        </div>
+        <aside className="visit-card">
+          <p className="eyebrow">Before you set out</p>
+          <h2>Plan a visit</h2>
+          <dl>
+            <PracticalFact title="Address" fact={venue.address} demo={demo} />
+            <PracticalFact
+              title="Opening hours"
+              fact={venue.practical.hours}
+              demo={demo}
+            />
+            <PracticalFact
+              title="Booking"
+              fact={venue.practical.booking}
+              demo={demo}
+            />
+            <PracticalFact
+              title="Accessibility"
+              fact={venue.practical.accessibility}
+              demo={demo}
+            />
+          </dl>
+          {venue.website && (
+            <a className="outline-button" href={venue.website}>
+              Visit venue website <ExternalLinkIcon />
+            </a>
+          )}
+          {venue.bookingUrl && (
+            <a className="text-link" href={venue.bookingUrl}>
+              Check bookings with the venue <ExternalLinkIcon />
+            </a>
+          )}
+          <Link className="text-link" href={`/?place=${venue.id}`}>
+            Locate in the guide →
+          </Link>
+        </aside>
+      </div>
+      <details id="sources" className="source-disclosure">
+        <summary>
+          Sources & updates{" "}
+          <span>
+            {venue.evidence.length
+              ? `${venue.evidence.length} published sources`
+              : "No sources — fictional demo"}
+          </span>
+        </summary>
+        <p>
+          Manually curated information. A source tells you where a claim came
+          from; it doesn’t guarantee it is still current. Checking a page is
+          different from visiting a venue.
+        </p>
+        {venue.evidence.map((source) => (
+          <article
+            key={source.id}
+            id={`source-${source.id}`}
+            tabIndex={-1}
+            className="source-entry"
+          >
+            {source.kind === "published" ? (
+              <>
+                <p className="eyebrow">
+                  Published information · {source.publisher}
+                </p>
+                <h3>
+                  <a href={source.url}>
+                    {source.title} <ExternalLinkIcon />
+                  </a>
+                </h3>
+                <p>
+                  Page checked on{" "}
+                  <time dateTime={source.checkedOn}>
+                    {formatDate(source.checkedOn)}
+                  </time>
+                  .{" "}
+                  {source.updatedOn ? (
+                    <>
+                      Source last updated on{" "}
+                      <time dateTime={source.updatedOn}>
+                        {formatDate(source.updatedOn)}
+                      </time>
+                      .
+                    </>
+                  ) : (
+                    "Source update date not supplied."
+                  )}
+                  {source.publishedOn && (
+                    <> Published on {formatDate(source.publishedOn)}.</>
+                  )}
+                </p>
+                <p>{source.note}</p>
+              </>
+            ) : (
+              <>
+                <p className="eyebrow">
+                  First-hand report · {source.publicContributor}
+                </p>
+                <p>{source.report}</p>
+                <p>
+                  {source.observedOn
+                    ? `Observed on ${formatDate(source.observedOn)}.`
+                    : "Visit date not supplied."}{" "}
+                  Submitted on {formatDate(source.submittedOn)}.
+                  {source.editedOn &&
+                    ` Edited on ${formatDate(source.editedOn)}.`}
+                </p>
+              </>
+            )}
+          </article>
+        ))}
+        {demo && (
+          <p>
+            This fixture has no real sources or confirmation dates. Nothing here
+            verifies a real business.
+          </p>
+        )}
       </details>
+      <aside className="community-note">
+        <p className="eyebrow">More field notes, in time</p>
+        <h2>Know this place well?</h2>
+        <p>
+          Community contributions are coming later. For now, this guide is a
+          small editorial collection with its sources left open.
+        </p>
+      </aside>
     </article>
   );
 }

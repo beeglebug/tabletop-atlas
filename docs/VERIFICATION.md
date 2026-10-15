@@ -29,3 +29,7 @@ Installation audit initially reported 9 high findings. A scoped override updates
 ## Next deployment verification
 
 Authenticate with Cloudflare and connect the intended GitHub repository using README instructions. Deploy to workers.dev and repeat smoke checks with `SMOKE_BASE_URL=https://<actual-worker-host> npm run smoke`; verify browser navigation, static asset cache headers, and logs/CPU metrics. Check direct profile URLs and unknown URLs from a fresh browser session. Only then mark the representative remote deployment gate passed. Custom-domain configuration and deployed performance/a11y evidence remain pending.
+
+## Later status
+
+The project owner subsequently confirmed successful milestone 1 Cloudflare deployment on 15 October 2026. The earlier authentication/deployment notes above describe the original local session, not the current project status. New milestone 2 implementation and production-runtime verification are recorded in [MILESTONE-2.md](MILESTONE-2.md). Remote CPU/latency measurements remain outstanding.

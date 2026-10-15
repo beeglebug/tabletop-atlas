@@ -25,12 +25,22 @@ export default function RootLayout({
           <Link className="brand" href="/">
             Tabletop Atlas<span>A local field guide</span>
           </Link>
-          <span className="stamp">In the making</span>
         </header>
         <main id="main">{children}</main>
-        <footer>
-          Made for curious players. Built with local knowledge.
-          <span>Development preview · Fictional example content</span>
+        <footer className="site-footer">
+          <span>© 2026 Tabletop Atlas</span>
+          <details className="data-credits">
+            <summary>Data credits</summary>
+            <p>
+              Regional place names and coordinates adapted from{" "}
+              <a href="https://www.geonames.org/">GeoNames</a>, licensed under{" "}
+              <a href="https://creativecommons.org/licenses/by/4.0/">
+                CC BY 4.0
+              </a>
+              . The regional extract was filtered and restructured for this
+              guide.
+            </p>
+          </details>
         </footer>
       </body>
     </html>

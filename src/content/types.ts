@@ -11,6 +11,7 @@ export type Evidence =
       checkedOn: ISODate;
       publishedOn?: ISODate;
       updatedOn?: ISODate;
+      note?: string;
     }
   | {
       id: string;
@@ -64,5 +65,13 @@ export interface PublishedVenue {
   address: Fact<string>;
   products: Record<Product, Fact<boolean>>;
   services: Record<Service, Fact<boolean>>;
+  website?: string;
+  bookingUrl?: string;
+  editorialNote: string;
+  practical: {
+    hours: Fact<string>;
+    booking: Fact<string>;
+    accessibility: Fact<string>;
+  };
   evidence: readonly Evidence[];
 }
