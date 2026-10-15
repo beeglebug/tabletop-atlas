@@ -11,8 +11,10 @@
     "build:worker": "opennextjs-cloudflare build",
     "preview": "opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare deploy",
-    "check": "npm run lint && npm run typecheck",
-    "smoke": "node scripts/smoke.mjs"
+    "check": "npm run format:check && npm run lint && npm run typecheck",
+    "smoke": "node scripts/smoke.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@base-ui/react": "latest",
@@ -32,6 +34,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "16.3.8",
+    "prettier": "3.9.10",
     "tailwindcss": "^4.1.0",
     "typescript": "^5.9.0",
     "wrangler": "latest"

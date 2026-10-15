@@ -14,7 +14,9 @@ npm run dev
 Open http://localhost:3000. The representative profile is `/venues/demo-field-guide`.
 
 ```sh
-npm run check          # ESLint and TypeScript
+npm run format         # format source and documentation with Prettier
+npm run format:check   # check formatting without changing files
+npm run check          # Prettier, ESLint and TypeScript
 npm run build          # Next.js production build
 npm run build:worker   # Next.js build + OpenNext adapter
 npm run preview        # serve existing adapter build in local Workers runtime
