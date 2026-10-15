@@ -17,16 +17,29 @@ export function placeLabel(place: SearchPlace) {
   return `${place.name}, ${place.area}`;
 }
 
+// Normalize the published index once, rather than for every keystroke/render.
+const indexedPlaces = regionalPlaces.map((place) => ({
+  place,
+  name: normalizeSearch(place.name),
+}));
+const placesByName = new Map<string, SearchPlace[]>();
+
+for (const { place, name } of indexedPlaces) {
+  for (const key of new Set([name, normalizeSearch(placeLabel(place))])) {
+    const matches = placesByName.get(key) ?? [];
+
+    matches.push(place);
+
+    placesByName.set(key, matches);
+  }
+}
+
 export function resolvePlace(query: string, id?: string) {
   const normalized = normalizeSearch(query);
 
   if (!normalized) return undefined;
 
-  const matches = regionalPlaces.filter(
-    (place) =>
-      normalizeSearch(place.name) === normalized ||
-      normalizeSearch(placeLabel(place)) === normalized,
-  );
+  const matches = placesByName.get(normalized) ?? [];
 
   // Never silently choose between different places with the same name.
   return id
@@ -65,9 +78,8 @@ export function getPlaceSuggestions(query: string, limit = 6) {
 
   if (normalized.length < 2) return [];
 
-  return regionalPlaces
-    .map((place) => {
-      const name = normalizeSearch(place.name);
+  return indexedPlaces
+    .map(({ place, name }) => {
       let score =
         name === normalized
           ? 0

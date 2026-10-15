@@ -1,4 +1,24 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function mockPendingLocation(page: Page) {
+  await page.addInitScript(() => {
+    Object.defineProperty(navigator, "geolocation", {
+      value: {
+        getCurrentPosition: (
+          success: (position: {
+            coords: { latitude: number; longitude: number };
+          }) => void,
+        ) => {
+          window.addEventListener(
+            "resolve-location",
+            () => success({ coords: { latitude: 52.678, longitude: -2.445 } }),
+            { once: true },
+          );
+        },
+      },
+    });
+  });
+}
 
 // Exercise real MapLibre markers without depending on third-party tile availability.
 test.beforeEach(async ({ page }) => {
@@ -34,7 +54,7 @@ test("search and filters restore through reload and browser history", async ({
 
   await expect(page).toHaveURL(/q=Shifnal/);
 
-  await page.getByRole("checkbox", { name: "Singles binders" }).check();
+  await page.getByRole("checkbox", { name: "Board games" }).check();
 
   await expect(
     page.getByRole("heading", { name: "1 place near Shifnal" }),
@@ -43,7 +63,7 @@ test("search and filters restore through reload and browser history", async ({
   await page.reload();
 
   await expect(
-    page.getByRole("checkbox", { name: "Singles binders" }),
+    page.getByRole("checkbox", { name: "Board games" }),
   ).toBeChecked();
 
   await expect(page.getByRole("searchbox")).toHaveValue("Shifnal");
@@ -57,13 +77,13 @@ test("search and filters restore through reload and browser history", async ({
   await page.goBack();
 
   await expect(
-    page.getByRole("checkbox", { name: "Singles binders" }),
+    page.getByRole("checkbox", { name: "Board games" }),
   ).toBeChecked();
 
   await page.goForward();
 
   await expect(
-    page.getByRole("checkbox", { name: "Singles binders" }),
+    page.getByRole("checkbox", { name: "Board games" }),
   ).not.toBeChecked();
 });
 
@@ -81,23 +101,23 @@ test("list and map selection synchronise; profile opens with sources", async ({
 
   await page
     .getByRole("button", {
-      name: "Select The Sample Table (fictional demo)",
+      name: "Select Waterstones Telford",
       exact: true,
     })
     .press("Enter");
 
-  await expect(page).toHaveURL(/place=demo-field-guide/);
+  await expect(page).toHaveURL(/place=waterstones-telford/);
 
   await expect(
     page.getByRole("button", {
-      name: "Select The Sample Table (fictional demo)",
+      name: "Select Waterstones Telford",
       exact: true,
     }),
   ).toBeFocused();
 
   await expect(
     page.getByRole("button", {
-      name: "Select The Sample Table (fictional demo)",
+      name: "Select Waterstones Telford",
       exact: true,
     }),
   ).toHaveAttribute("aria-pressed", "true");
@@ -106,7 +126,10 @@ test("list and map selection synchronise; profile opens with sources", async ({
     await page.getByRole("button", { name: "List", exact: true }).click();
 
   const card = page.getByRole("article").filter({
-    has: page.getByRole("heading", { name: "The Sample Table", exact: true }),
+    has: page.getByRole("heading", {
+      name: "Waterstones Telford",
+      exact: true,
+    }),
   });
 
   await expect(
@@ -169,13 +192,13 @@ test("unknown filters, empty results, direct profiles and missing pages recover"
     page.getByRole("heading", { name: "3 places", exact: true }),
   ).toBeVisible();
 
-  await page.goto("/venues/demo-high-street");
+  await page.goto("/venues/smyths-toys-telford");
 
   await expect(
-    page.getByRole("heading", { name: "High Street Books & Games" }),
+    page.getByRole("heading", { name: "Smyths Toys Telford" }),
   ).toBeVisible();
 
-  await expect(page.getByText("Not available (demo)").first()).toBeVisible();
+  await expect(page.getByText("Not checked").first()).toBeVisible();
 
   const response = await page.goto("/venues/not-a-venue");
 
@@ -254,7 +277,7 @@ test("device location sorts locally without exposing coordinates in the URL", as
   ).toBeVisible();
 
   await expect(page.locator(".results-list > li").first()).toContainText(
-    "High Street Books & Games",
+    "Waterstones Telford",
   );
 
   expect(new URL(page.url()).search).toBe("");
@@ -271,9 +294,13 @@ test("keyboard search, focus and layout work at the configured viewport", async 
     page.getByRole("link", { name: "Skip to content" }),
   ).toBeFocused();
 
+  await expect(page.getByRole("searchbox")).toBeEnabled();
+
   await page.getByRole("searchbox").focus();
 
   await page.keyboard.type("Bridgnorth");
+
+  await expect(page.getByRole("searchbox")).toHaveValue("Bridgnorth");
 
   await page.keyboard.press("Enter");
 
@@ -403,7 +430,14 @@ test("partial and misspelled towns offer usable keyboard suggestions", async ({
 
   await expect(page).toHaveURL(/near=2654539/);
 
-  await page.getByRole("checkbox", { name: "Singles binders" }).check();
+  // Choosing the same canonical place still replaces an edited draft.
+  await page.getByRole("searchbox").fill("Broesley");
+
+  await suggestion.press("Enter");
+
+  await expect(page.getByRole("searchbox")).toHaveValue("Broseley, Shropshire");
+
+  await page.getByRole("checkbox", { name: "Board games" }).check();
 
   await expect(
     page.getByRole("heading", { name: "1 place near Broseley" }),
@@ -430,4 +464,194 @@ test("known places without nearby venues differ from unrecognised searches", asy
       exact: false,
     }),
   ).toBeVisible();
+});
+
+test("real retailer profiles expose honest provenance and share metadata", async ({
+  page,
+}) => {
+  await page.goto("/venues/smyths-toys-telford");
+
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+    "href",
+    "https://tabletop.stuartlee.dev/venues/smyths-toys-telford",
+  );
+
+  await expect(page.locator('meta[property="og:title"]')).toHaveAttribute(
+    "content",
+    "Smyths Toys Telford",
+  );
+
+  await expect(
+    page.getByText("Approximate retail-park postcode location", {
+      exact: false,
+    }),
+  ).toBeVisible();
+
+  await page.locator("#sources > summary").click();
+
+  await expect(
+    page.getByRole("link", { name: "National board-game catalogue" }),
+  ).toBeVisible();
+
+  await page.goto("/?tag=singles-binders");
+
+  await expect(
+    page.getByRole("heading", { name: "No places found, yet." }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByText("Unknown offerings aren’t counted as matches.", {
+      exact: false,
+    }),
+  ).toBeVisible();
+});
+
+test("a delayed device-location response preserves newer filters", async ({
+  page,
+}) => {
+  await mockPendingLocation(page);
+
+  await page.goto("/?q=Bridgnorth");
+
+  await page.getByRole("button", { name: "Use my location" }).click();
+
+  await page.getByRole("checkbox", { name: "Board games" }).check();
+
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("resolve-location")),
+  );
+
+  await expect(
+    page.getByRole("checkbox", { name: "Board games" }),
+  ).toBeChecked();
+
+  await expect(
+    page.getByRole("heading", { name: "1 place", exact: true }),
+  ).toBeVisible();
+
+  await expect(page).toHaveURL(/tag=board-games/);
+});
+
+test("browser history restores town distances and cancels pending location requests", async ({
+  page,
+}) => {
+  await mockPendingLocation(page);
+
+  await page.goto("/?q=Bridgnorth");
+
+  await page.getByRole("button", { name: "Use my location" }).click();
+
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("resolve-location")),
+  );
+
+  await expect(page.locator(".results-list > li").first()).toContainText(
+    "Waterstones Telford",
+  );
+
+  await page.goBack();
+
+  await expect(
+    page.getByRole("heading", { name: "3 places near Bridgnorth" }),
+  ).toBeVisible();
+
+  await expect(page.locator(".results-list > li").first()).toContainText(
+    "The Board Room",
+  );
+
+  await expect(
+    page.getByText("Places sorted by distance.", { exact: false }),
+  ).not.toBeVisible();
+
+  await page.getByRole("button", { name: "Use my location" }).click();
+
+  await page.goForward();
+
+  await expect(
+    page.getByRole("heading", { name: "3 places", exact: true }),
+  ).toBeVisible();
+
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event("resolve-location")),
+  );
+
+  await expect(page.locator(".results-list > li").first()).toContainText(
+    "The Board Room",
+  );
+
+  await expect(
+    page.getByText("Places sorted by distance.", { exact: false }),
+  ).not.toBeVisible();
+});
+
+test("repeating the current URL state does not add duplicate history entries", async ({
+  page,
+}) => {
+  await page.goto("/?place=board-room-bridgnorth");
+
+  const initialLength = await page.evaluate(() => history.length);
+  const card = page.getByRole("article").filter({
+    has: page.getByRole("heading", { name: "The Board Room", exact: true }),
+  });
+
+  await card.getByRole("button", { name: "Selected on map" }).click();
+
+  expect(await page.evaluate(() => history.length)).toBe(initialLength);
+});
+
+test("the same source link reopens a disclosure closed after following it", async ({
+  page,
+}) => {
+  await page.goto("/venues/the-board-room-bridgnorth#source-booking");
+
+  await expect(page.locator("#sources")).toHaveAttribute("open", "");
+
+  await page.locator("#sources > summary").click();
+
+  await expect(page.locator("#sources")).not.toHaveAttribute("open", "");
+
+  await page.locator('a[href="#source-booking"]').first().click();
+
+  await expect(page.locator("#sources")).toHaveAttribute("open", "");
+
+  await expect(page.locator("#source-booking")).toBeFocused();
+});
+
+test("failed map tiles preserve markers once the style is available", async ({
+  page,
+}, testInfo) => {
+  await page.route("https://tiles.openfreemap.org/**", (route) =>
+    route.fulfill({
+      json: {
+        version: 8,
+        sources: {
+          basemap: {
+            type: "raster",
+            tiles: ["https://atlas-test.invalid/{z}/{x}/{y}.png"],
+            tileSize: 256,
+          },
+        },
+        layers: [{ id: "basemap", type: "raster", source: "basemap" }],
+      },
+    }),
+  );
+
+  await page.route("https://atlas-test.invalid/**", (route) => route.abort());
+
+  await page.goto("/");
+
+  if (testInfo.project.name === "mobile")
+    await page.getByRole("button", { name: "Map", exact: true }).click();
+
+  await expect(page.getByText("Unfolding the map…")).not.toBeVisible({
+    timeout: 15000,
+  });
+
+  await expect(
+    page.getByRole("button", { name: "Select The Board Room", exact: true }),
+  ).toBeVisible();
+
+  await expect(
+    page.getByRole("heading", { name: "The guide is still open." }),
+  ).not.toBeVisible();
 });

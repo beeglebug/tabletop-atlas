@@ -59,9 +59,9 @@ export interface PublishedVenue {
   name: string;
   town: string;
   classification: "tabletop-venue" | "general-retailer" | "club";
-  contentKind: "curated" | "demo";
   summary: string;
   coordinates: Fact<{ latitude: number; longitude: number }>;
+  coordinateNote?: string;
   address: Fact<string>;
   products: Record<Product, Fact<boolean>>;
   services: Record<Service, Fact<boolean>>;

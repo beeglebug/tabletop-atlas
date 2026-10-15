@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   getPlaceSuggestions,
@@ -16,15 +16,21 @@ export function LocationSearch({
   onSearch: (query: string, near?: string) => void;
 }) {
   const [draft, setDraft] = useState(query);
+  const input = useRef<HTMLInputElement>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestions = showSuggestions ? getPlaceSuggestions(draft) : [];
 
   function choose(place: SearchPlace) {
-    setDraft(placeLabel(place));
+    const label = placeLabel(place);
+
+    // Also replace a misspelling when this place is already the current URL.
+    if (input.current) input.current.value = label;
+
+    setDraft(label);
 
     setShowSuggestions(false);
 
-    onSearch(placeLabel(place), place.id);
+    onSearch(label, place.id);
   }
 
   return (
@@ -39,16 +45,19 @@ export function LocationSearch({
 
         setShowSuggestions(false);
 
-        onSearch(draft.trim());
+        const query = new FormData(event.currentTarget).get("q");
+
+        onSearch(String(query ?? "").trim());
       }}
     >
       <label htmlFor="place-search">Where shall we go?</label>
       <div className="search-row">
         <input
+          ref={input}
           id="place-search"
           name="q"
           type="search"
-          value={draft}
+          defaultValue={query}
           onChange={(event) => {
             setDraft(event.target.value);
 

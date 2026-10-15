@@ -80,10 +80,7 @@ export function MapPanel({
       </div>
       {venue && (
         <div className="pin-preview" aria-live="polite">
-          <p className="eyebrow">
-            {typeLabels[venue.classification]}
-            {venue.contentKind === "demo" && " · Fictional demo"}
-          </p>
+          <p className="eyebrow">{typeLabels[venue.classification]}</p>
           <h3>{venue.name}</h3>
           <p>{venue.town}</p>
           <Link className="text-link" href={`/venues/${venue.slug}`}>

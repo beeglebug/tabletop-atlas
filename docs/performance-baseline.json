@@ -1,0 +1,139 @@
+{
+  "base": "https://tabletop.stuartlee.dev",
+  "measuredAt": "2026-10-15T21:22:25.988Z",
+  "method": "Chromium; fresh context per navigation; 3 samples; no network or CPU throttling; 3-second observation. Lab observations, not field Core Web Vitals or Worker CPU measurements.",
+  "results": [
+    {
+      "width": 1440,
+      "path": "/",
+      "sample": 1,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 268,
+      "fcp": 1828,
+      "lcp": 1828,
+      "cls": 0
+    },
+    {
+      "width": 1440,
+      "path": "/",
+      "sample": 2,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 390,
+      "fcp": 544,
+      "lcp": 544,
+      "cls": 0
+    },
+    {
+      "width": 1440,
+      "path": "/",
+      "sample": 3,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 65,
+      "fcp": 244,
+      "lcp": 244,
+      "cls": 0
+    },
+    {
+      "width": 1440,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 1,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 92,
+      "fcp": 208,
+      "lcp": 208,
+      "cls": 0
+    },
+    {
+      "width": 1440,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 2,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 477,
+      "fcp": 616,
+      "lcp": 616,
+      "cls": 0
+    },
+    {
+      "width": 1440,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 3,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 240,
+      "fcp": 348,
+      "lcp": 348,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/",
+      "sample": 1,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 56,
+      "fcp": 160,
+      "lcp": 160,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/",
+      "sample": 2,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 71,
+      "fcp": 504,
+      "lcp": 504,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/",
+      "sample": 3,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 65,
+      "fcp": 472,
+      "lcp": 472,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 1,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 75,
+      "fcp": 468,
+      "lcp": 468,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 2,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 61,
+      "fcp": 180,
+      "lcp": 180,
+      "cls": 0
+    },
+    {
+      "width": 390,
+      "path": "/venues/the-board-room-bridgnorth",
+      "sample": 3,
+      "status": 200,
+      "cache": "HIT",
+      "ttfb": 81,
+      "fcp": 216,
+      "lcp": 216,
+      "cls": 0
+    }
+  ]
+}

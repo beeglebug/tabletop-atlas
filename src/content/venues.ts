@@ -36,7 +36,6 @@ export const venues: readonly PublishedVenue[] = [
     name: "The Board Room",
     town: "Bridgnorth",
     classification: "tabletop-venue",
-    contentKind: "curated",
     summary:
       "A board game café on Whitburn Street, with bookable play sessions. A place to make an afternoon of a game.",
     editorialNote:
@@ -107,53 +106,125 @@ export const venues: readonly PublishedVenue[] = [
     ],
   },
   {
-    id: "demo-field-guide",
-    slug: "demo-field-guide",
-    name: "The Sample Table",
-    town: "Shifnal",
-    classification: "tabletop-venue",
-    contentKind: "demo",
-    summary:
-      "A fictional games shop with browseable singles binders and casual play. Built to try out the guide, not a real destination.",
-    editorialNote:
-      "An illustrative example of a dedicated tabletop shop. All offerings and the map position are invented for development. No real business is represented.",
-    coordinates: known({ latitude: 52.667, longitude: -2.372 }),
-    address: unknown,
-    products: {
-      ...products,
-      "singles-binders": known(true),
-      "sealed-cards": known(true),
-      "board-games": known(true),
-    },
-    services: { ...services, "casual-play": known(true) },
-    practical,
-    evidence: [],
-  },
-  {
-    id: "demo-high-street",
-    slug: "demo-high-street",
-    name: "High Street Books & Games",
+    id: "waterstones-telford",
+    slug: "waterstones-telford",
+    name: "Waterstones Telford",
     town: "Telford",
     classification: "general-retailer",
-    contentKind: "demo",
     summary:
-      "A fictional general retailer selling board games and sealed cards. Shopping does not imply a space to play.",
+      "A town-centre bookshop whose local centre listing advertises a games range. A browsing stop alongside the books.",
     editorialNote:
-      "This fictional profile illustrates the distinction between a shop with tabletop products and a dedicated play venue. Its products, services and map position are demo data.",
-    coordinates: known({ latitude: 52.678, longitude: -2.445 }),
-    address: unknown,
+      "Telford Centre advertises games at this branch. Specific titles, trading cards and play facilities have not been checked. Ask the shop about a particular game before making a special trip.",
+    coordinates: known(
+      { latitude: 52.6766164, longitude: -2.4467826 },
+      ["location"],
+      "2026-10-15",
+    ),
+    coordinateNote:
+      "Approximate shopping-centre location; not an entrance pin. Use the street address to find the shop.",
+    address: known(
+      "219 Dean Street, Telford Centre, Telford",
+      ["centre"],
+      "2026-10-15",
+    ),
+    website: "https://www.waterstones.com/bookshops/telford",
     products: {
       ...products,
-      "board-games": known(true),
-      "sealed-cards": known(true),
-      "singles-binders": known(false),
+      "board-games": known(true, ["centre"], "2026-10-15"),
     },
+    services,
+    practical,
+    evidence: [
+      {
+        id: "centre",
+        kind: "published",
+        url: "https://www.telfordcentre.com/brands/waterstones/",
+        title: "Local branch and games listing",
+        publisher: "Telford Centre",
+        checkedOn: "2026-10-15",
+        note: "The centre lists the branch address and a games range. This supports general games browsing, not availability of any particular title or trading cards. Centre hours are not treated as branch hours.",
+      },
+      {
+        id: "location",
+        kind: "published",
+        url: "https://www.ukmalls.co.uk/shopping-centres/england/west-midlands/shropshire/telford-shopping-centre/waterstones",
+        title: "Shopping-centre map reference",
+        publisher: "UK Malls Online",
+        checkedOn: "2026-10-15",
+        note: "Coordinates describe the shopping centre, not the shop entrance. Used only for approximate regional discovery.",
+      },
+    ],
+  },
+  {
+    id: "smyths-telford",
+    slug: "smyths-toys-telford",
+    name: "Smyths Toys Telford",
+    town: "Telford",
+    classification: "general-retailer",
+    summary:
+      "A toy superstore at Telford Bridge Retail Park. Check the retailer’s board-game range and select Telford for local availability before travelling.",
+    editorialNote:
+      "Smyths publishes a national board-game catalogue and offers collection at Telford. That does not confirm which games are on this branch’s shelves today. Local board-game stock, trading cards, singles and play space remain unchecked.",
+    coordinates: known(
+      { latitude: 52.678759, longitude: -2.454627 },
+      ["location"],
+      "2026-10-15",
+    ),
+    coordinateNote:
+      "Approximate retail-park postcode location; not an entrance pin. Follow the address and store signage.",
+    address: known(
+      "Unit 3, Telford Bridge Retail Park, Colliers Way, Telford, TF3 4PB",
+      ["store"],
+      "2026-10-15",
+    ),
+    website:
+      "https://www.smythstoys.com/uk/en-gb/storefinder/storedetails/telford",
+    products,
     services: {
       ...services,
-      "casual-play": known(false),
-      "bookable-tables": known(false),
+      "step-free-access": known(true, ["store"], "2026-10-15"),
     },
-    practical,
-    evidence: [],
+    practical: {
+      hours: known(
+        "Published regular hours: Monday–Friday 09:00–20:00; Saturday 09:00–19:00; Sunday 10:30–16:30. Check the store page for changes and holiday hours.",
+        ["store"],
+        "2026-10-15",
+      ),
+      booking: unknown,
+      accessibility: known(
+        "The store page lists wheelchair access and disabled parking. Contact the branch about your specific requirements.",
+        ["store"],
+        "2026-10-15",
+      ),
+    },
+    evidence: [
+      {
+        id: "store",
+        kind: "published",
+        url: "https://www.smythstoys.com/uk/en-gb/storefinder/storedetails/telford",
+        title: "Official Telford store listing",
+        publisher: "Smyths Toys",
+        checkedOn: "2026-10-15",
+        note: "Supports address, regular hours, collection and published wheelchair access/disabled parking. Does not establish tabletop play facilities or current game stock.",
+      },
+      {
+        id: "catalogue",
+        kind: "published",
+        url: "https://www.smythstoys.com/uk/en-gb/toys/games-puzzles-and-books/board-games/c/SM06010616",
+        title: "National board-game catalogue",
+        publisher: "Smyths Toys",
+        checkedOn: "2026-10-15",
+        note: "National range only. Select Telford on the retailer’s site to check availability. No branch-level product claim is inferred from this catalogue.",
+      },
+      {
+        id: "location",
+        kind: "published",
+        url: "https://www.ukpostcodecheck.com/postcode/tf3-4pb",
+        title: "Retail-park postcode location",
+        publisher: "UK Postcode Check",
+        checkedOn: "2026-10-15",
+        note: "Approximate postcode coordinates, not a surveyed storefront or entrance.",
+      },
+    ],
   },
 ];

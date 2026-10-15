@@ -75,7 +75,13 @@ export default function VenueMap({
         setReady(true);
       });
 
-      instance.on("error", onUnavailable);
+      // A failed tile should not discard a usable map and all its markers.
+      // Style failures have no source ID; the timeout covers an incomplete load.
+      instance.on("error", (event) => {
+        const sourceError = "sourceId" in event && event.sourceId;
+
+        if (!sourceError && !instance.isStyleLoaded()) onUnavailable();
+      });
     } catch {
       clearTimeout(timeout);
 
@@ -121,10 +127,7 @@ export default function VenueMap({
 
       button.textContent = String(index + 1);
 
-      button.setAttribute(
-        "aria-label",
-        `Select ${venue.name}${venue.contentKind === "demo" ? " (fictional demo)" : ""}`,
-      );
+      button.setAttribute("aria-label", `Select ${venue.name}`);
 
       pinButtons.current.push({ id: venue.id, button });
 
@@ -174,7 +177,12 @@ export default function VenueMap({
 
   return (
     <>
-      <div ref={container} className="map-canvas" aria-label="Venue map" />
+      <div
+        ref={container}
+        className="map-canvas"
+        role="region"
+        aria-label="Venue map"
+      />
       {!ready && (
         <p className="map-loading" role="status">
           Unfolding the map…

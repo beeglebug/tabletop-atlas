@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ExternalLinkIcon } from "@/components/ui/external-link-icon";
 import { SourceLinks } from "@/components/venues/source-links";
 import { FactDetails, factText } from "@/components/venues/fact-details";
-import type { Fact, Product, Service } from "@/content/types";
+import type { Fact } from "@/content/types";
 import { getPublishedVenues, getVenueBySlug } from "@/lib/content";
 import {
   formatDate,
@@ -30,18 +30,21 @@ export async function generateMetadata({
   return {
     title: venue?.name ?? "Place not found",
     description: venue?.summary,
+    alternates: venue ? { canonical: `/venues/${venue.slug}` } : undefined,
+    openGraph: venue
+      ? {
+          title: venue.name,
+          description: venue.summary,
+          type: "website",
+          locale: "en_GB",
+          siteName: "Tabletop Atlas",
+          url: `/venues/${venue.slug}`,
+        }
+      : undefined,
   };
 }
 
-function PracticalFact({
-  title,
-  fact,
-  demo,
-}: {
-  title: string;
-  fact: Fact<string>;
-  demo: boolean;
-}) {
+function PracticalFact({ title, fact }: { title: string; fact: Fact<string> }) {
   return (
     <div>
       <dt>{title}</dt>
@@ -49,11 +52,38 @@ function PracticalFact({
         {fact.status === "known"
           ? fact.value
           : fact.reason === "conflicting-evidence"
-            ? "Published hours differ. Check directly with the venue before travelling."
+            ? "Published sources differ. Check directly with the venue before travelling."
             : "Not checked — contact the venue before travelling."}
-        <FactDetails fact={fact} demo={demo} />
+        <FactDetails fact={fact} />
       </dd>
     </div>
+  );
+}
+
+function OfferingFacts({
+  title,
+  facts,
+  labels,
+}: {
+  title: string;
+  facts: Record<string, Fact<boolean>>;
+  labels: Record<string, string>;
+}) {
+  return (
+    <section>
+      <h2>{title}</h2>
+      <dl>
+        {Object.entries(facts).map(([key, fact]) => (
+          <div key={key}>
+            <dt>{labels[key]}</dt>
+            <dd>
+              {factText(fact)}
+              <FactDetails fact={fact} />
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
   );
 }
 
@@ -66,7 +96,6 @@ export default async function VenuePage({
 
   if (!venue) notFound();
 
-  const demo = venue.contentKind === "demo";
   const publishedSources = venue.evidence.filter(
     (source) => source.kind === "published",
   );
@@ -84,7 +113,6 @@ export default async function VenuePage({
       <header className="profile-header">
         <p className="eyebrow">
           {venue.town} / {typeLabels[venue.classification]}
-          {demo && " / Fictional demo"}
         </p>
         <h1>{venue.name}</h1>
         <p className="intro">{venue.summary}</p>
@@ -94,27 +122,22 @@ export default async function VenuePage({
           ))}
         </ul>
       </header>
-      {demo ? (
-        <div className="notice">
-          Fictional demo. Offerings and map position are illustrative. This is
-          not a real destination.
-        </div>
-      ) : (
-        <div className="freshness-note">
-          <span className="mini-stamp">Published sources</span>
-          <p>
-            {latestCheck && (
-              <>
-                Published information last checked on{" "}
-                <time dateTime={latestCheck}>{formatDate(latestCheck)}</time>
-                .{" "}
-              </>
-            )}
-            Individual evidence dates vary. No first-hand visit is recorded.{" "}
-            <a href="#sources">Inspect sources & updates ↓</a>
-          </p>
-        </div>
-      )}
+      <div className="freshness-note">
+        <span className="mini-stamp">Published sources</span>
+        <p>
+          {latestCheck && (
+            <>
+              Published information last checked on{" "}
+              <time dateTime={latestCheck}>{formatDate(latestCheck)}</time>
+              .{" "}
+            </>
+          )}
+          Individual evidence dates vary.{" "}
+          {!venue.evidence.some((source) => source.kind === "first-hand") &&
+            "No first-hand visit is recorded. "}
+          <a href="#sources">Inspect sources & updates ↓</a>
+        </p>
+      </div>
       <div className="profile-grid">
         <div>
           <section className="field-note">
@@ -123,34 +146,16 @@ export default async function VenuePage({
             <p>{venue.editorialNote}</p>
           </section>
           <div className="facts-grid">
-            <section>
-              <h2>Browse & buy</h2>
-              <dl>
-                {Object.entries(venue.products).map(([key, fact]) => (
-                  <div key={key}>
-                    <dt>{productLabels[key as Product]}</dt>
-                    <dd>
-                      {factText(fact, demo)}
-                      <FactDetails fact={fact} demo={demo} />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
-            <section>
-              <h2>Stay & play</h2>
-              <dl>
-                {Object.entries(venue.services).map(([key, fact]) => (
-                  <div key={key}>
-                    <dt>{serviceLabels[key as Service]}</dt>
-                    <dd>
-                      {factText(fact, demo)}
-                      <FactDetails fact={fact} demo={demo} />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
-            </section>
+            <OfferingFacts
+              title="Browse & buy"
+              facts={venue.products}
+              labels={productLabels}
+            />
+            <OfferingFacts
+              title="Stay & play"
+              facts={venue.services}
+              labels={serviceLabels}
+            />
           </div>
           <p className="unknown-note">
             “Not checked” means we don’t yet know. It does not mean the venue
@@ -161,23 +166,17 @@ export default async function VenuePage({
           <p className="eyebrow">Before you set out</p>
           <h2>Plan a visit</h2>
           <dl>
-            <PracticalFact title="Address" fact={venue.address} demo={demo} />
-            <PracticalFact
-              title="Opening hours"
-              fact={venue.practical.hours}
-              demo={demo}
-            />
-            <PracticalFact
-              title="Booking"
-              fact={venue.practical.booking}
-              demo={demo}
-            />
+            <PracticalFact title="Address" fact={venue.address} />
+            <PracticalFact title="Opening hours" fact={venue.practical.hours} />
+            <PracticalFact title="Booking" fact={venue.practical.booking} />
             <PracticalFact
               title="Accessibility"
               fact={venue.practical.accessibility}
-              demo={demo}
             />
           </dl>
+          {venue.coordinateNote && (
+            <p className="unknown-note">{venue.coordinateNote}</p>
+          )}
           {venue.website && (
             <a className="outline-button" href={venue.website}>
               Visit venue website <ExternalLinkIcon />
@@ -197,9 +196,8 @@ export default async function VenuePage({
         <summary>
           Sources & updates{" "}
           <span>
-            {venue.evidence.length
-              ? `${venue.evidence.length} published sources`
-              : "No sources — fictional demo"}
+            {venue.evidence.length}{" "}
+            {venue.evidence.length === 1 ? "source" : "sources"}
           </span>
         </summary>
         <p>
@@ -265,12 +263,6 @@ export default async function VenuePage({
             )}
           </article>
         ))}
-        {demo && (
-          <p>
-            This fixture has no real sources or confirmation dates. Nothing here
-            verifies a real business.
-          </p>
-        )}
       </details>
       <aside className="community-note">
         <p className="eyebrow">More field notes, in time</p>

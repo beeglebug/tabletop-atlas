@@ -32,7 +32,7 @@ test("URL state is canonical, deduplicated and ignores unknown filters", () => {
 test("filters require every known positive claim; unknown and false do not match", () => {
   const state = {
     query: "",
-    filters: ["singles-binders", "casual-play"] as const,
+    filters: ["board-games"] as const,
     selected: "",
   };
 
@@ -40,7 +40,7 @@ test("filters require every known positive claim; unknown and false do not match
     getResults(venues, { ...state, filters: [...state.filters] }).map(
       ({ venue }) => venue.id,
     ),
-    ["demo-field-guide"],
+    ["waterstones-telford"],
   );
 
   assert.equal(
@@ -78,17 +78,17 @@ test("proximity uses stored coordinates, handles zero distance and orders neares
   const result = getResults(
     venues,
     { query: "", filters: [], selected: "" },
-    { latitude: 52.678, longitude: -2.445 },
+    { latitude: 52.6766164, longitude: -2.4467826 },
   );
 
-  assert.equal(result[0].venue.id, "demo-high-street");
+  assert.equal(result[0].venue.id, "waterstones-telford");
 
   assert.equal(result[0].distance, 0);
 
   assert.equal(result[2].venue.id, "board-room-bridgnorth");
 });
 
-test("curated claims reference existing evidence and fixture identities stay explicit", () => {
+test("published claims reference existing evidence and identities stay unique", () => {
   for (const venue of venues) {
     assert.equal(venues.filter((item) => item.id === venue.id).length, 1);
 
@@ -102,8 +102,7 @@ test("curated claims reference existing evidence and fixture identities stay exp
       for (const id of fact.evidenceIds)
         assert.ok(venue.evidence.some((source) => source.id === id));
 
-      if (venue.contentKind === "curated" && fact.status === "known")
-        assert.ok(fact.evidenceIds.length > 0);
+      if (fact.status === "known") assert.ok(fact.evidenceIds.length > 0);
     }
   }
 });
@@ -177,4 +176,53 @@ test("ambiguous place names require a choice that survives a shared URL", () => 
   assert.equal(resolvePlace("Broseley", choice.id), undefined);
 
   assert.ok(getResults(venues, restored).length > 0);
+});
+
+test("release content contains real sourced destinations without invented availability", () => {
+  assert.equal(venues.length, 3);
+
+  assert.equal(
+    venues.filter((venue) => venue.classification === "general-retailer")
+      .length,
+    2,
+  );
+
+  const smyths = venues.find((venue) => venue.id === "smyths-telford")!;
+
+  assert.equal(smyths.products["board-games"].status, "unknown");
+
+  assert.equal(smyths.services["casual-play"].status, "unknown");
+
+  assert.equal(
+    getResults(venues, {
+      query: "",
+      filters: ["board-games", "casual-play"],
+      selected: "",
+    }).length,
+    0,
+  );
+});
+
+test("a confirmed absence cannot satisfy a positive offering filter", () => {
+  const unavailable = {
+    ...venues[1],
+    products: {
+      ...venues[1].products,
+      "board-games": {
+        status: "known",
+        value: false,
+        evidenceIds: ["centre"],
+        confirmedOn: "2026-10-15",
+      },
+    },
+  } satisfies (typeof venues)[number];
+
+  assert.deepEqual(
+    getResults([unavailable], {
+      query: "",
+      filters: ["board-games"],
+      selected: "",
+    }),
+    [],
+  );
 });
